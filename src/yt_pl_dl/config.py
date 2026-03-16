@@ -20,6 +20,7 @@ def _as_bool(value: str | None, default: bool = False) -> bool:
 @dataclass(slots=True)
 class Settings:
     yt_skip_cert_check: bool
+    yt_cookies_path: Path | None
     download_max_height: int
     local_download_dir: Path
     state_db_path: Path
@@ -37,9 +38,12 @@ def load_settings() -> Settings:
     state_db_path = Path(os.getenv("STATE_DB_PATH", "./data/state.db")).expanduser()
     download_max_height = int(os.getenv("DOWNLOAD_MAX_HEIGHT", "1080"))
     log_file_path = Path(os.getenv("LOG_FILE_PATH", "./logs/yt-pl-dl.log")).expanduser()
+    cookies_path_raw = os.getenv("YT_COOKIES_PATH", "").strip()
+    yt_cookies_path = Path(cookies_path_raw).expanduser() if cookies_path_raw else None
 
     return Settings(
         yt_skip_cert_check=_as_bool(os.getenv("YT_SKIP_CERT_CHECK"), default=False),
+        yt_cookies_path=yt_cookies_path,
         download_max_height=download_max_height,
         local_download_dir=local_download_dir,
         state_db_path=state_db_path,

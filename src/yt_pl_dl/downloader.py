@@ -74,6 +74,8 @@ def download_video(video: PlaylistVideo, settings: Settings) -> DownloadResult:
             "default": "%(upload_date)s - %(title)s [%(id)s].%(ext)s",
         },
     }
+    if settings.yt_cookies_path:
+        ydl_opts["cookiefile"] = str(settings.yt_cookies_path)
 
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(video.webpage_url, download=True)

@@ -52,6 +52,7 @@ def cmd_check() -> int:
         playlist_url,
         include_archived=settings.check_archived,
         skip_cert_check=settings.yt_skip_cert_check,
+        cookies_path=str(settings.yt_cookies_path) if settings.yt_cookies_path else None,
     )
     processed_ids = store.get_processed_ids()
     new_videos = [video for video in videos if video.video_id not in processed_ids]
@@ -119,6 +120,7 @@ def cmd_bootstrap_state(confirm: bool) -> int:
         playlist_url,
         include_archived=settings.check_archived,
         skip_cert_check=settings.yt_skip_cert_check,
+        cookies_path=str(settings.yt_cookies_path) if settings.yt_cookies_path else None,
     )
 
     if not videos:
@@ -150,6 +152,7 @@ def cmd_run_once() -> int:
         playlist_url,
         include_archived=settings.check_archived,
         skip_cert_check=settings.yt_skip_cert_check,
+        cookies_path=str(settings.yt_cookies_path) if settings.yt_cookies_path else None,
     )
     processed_ids = store.get_processed_ids()
     new_videos = [video for video in videos if video.video_id not in processed_ids]

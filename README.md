@@ -59,6 +59,7 @@ PYTHONPATH=src python3 -m yt_pl_dl.main bootstrap-state --yes
 
 - `yt-dlp` must be able to access YouTube from the machine where the script runs.
 - If local Python has broken CA certificates, set `YT_SKIP_CERT_CHECK=1` as a temporary workaround.
+- If YouTube requires bot verification, provide `YT_COOKIES_PATH` pointing to an exported `cookies.txt`.
 - By default downloads now prefer QuickTime-friendly `mp4/h264+aac` and cap video at `1080p`. Override with `DOWNLOAD_MAX_HEIGHT`.
 - Logs are written to `./logs/yt-pl-dl.log` by default.
 - Recommended production mode is `SYNC_MODE=copy` with a mounted Synology directory exposed into the host/LXC/container.

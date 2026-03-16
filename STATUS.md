@@ -23,6 +23,7 @@
 - базовые GitHub Actions workflow для CI и публикации Docker image;
 - production-заготовки для запуска на Proxmox через Docker Compose.
 - основной production path зафиксирован как mounted Synology directory + `SYNC_MODE=copy`.
+- поддержка `YT_COOKIES_PATH` для YouTube bot-check обхода через cookies.
 
 ## Verified
 

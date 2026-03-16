@@ -39,6 +39,7 @@ def fetch_playlist_videos(
     playlist_url: str,
     include_archived: bool = False,
     skip_cert_check: bool = False,
+    cookies_path: str | None = None,
 ) -> list[PlaylistVideo]:
     ydl_opts = {
         "extract_flat": True,
@@ -48,6 +49,8 @@ def fetch_playlist_videos(
         "lazy_playlist": False,
         "nocheckcertificate": skip_cert_check,
     }
+    if cookies_path:
+        ydl_opts["cookiefile"] = cookies_path
 
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(playlist_url, download=False)
