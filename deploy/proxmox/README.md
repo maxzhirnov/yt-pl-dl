@@ -2,15 +2,17 @@
 
 ## Recommended Approach
 
-Для первого production deployment на Proxmox рекомендован такой вариант:
+Для рабочего production deployment на Proxmox рекомендован такой вариант:
 
-1. Поднять отдельный Linux VM или LXC container.
-2. Установить Docker и Docker Compose plugin.
-3. Склонировать репозиторий.
-4. Примонтировать Synology share на host или прокинуть mount в LXC.
-5. Скопировать `.env.production.example` в `.env.production`.
-6. Настроить `SYNC_TARGET` на mounted path.
-7. Запускать контейнер по cron или systemd timer на хосте.
+1. Поднять отдельный privileged LXC container.
+2. Примонтировать Synology share на host и прокинуть его в LXC.
+3. Установить Python, `ffmpeg`, `rsync`, `nodejs`, `npm`, `deno`, `tailscale`.
+4. Подключить Tailscale exit node для доступа к YouTube.
+5. Склонировать репозиторий.
+6. Создать Python virtualenv и установить зависимости.
+7. Настроить `cookies.txt`, `yt-dlp-ejs` и `bgutil-ytdlp-pot-provider`.
+8. Скопировать `.env.production.example` в `.env.production`.
+9. Запускать сервис через `systemd` timer.
 
 ## Recommended Sync Model
 
@@ -27,21 +29,21 @@
 ```bash
 cp .env.production.example .env.production
 mkdir -p data logs
-docker compose pull
-docker compose run --rm yt-pl-dl
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main run-once
 ```
 
 ## Scheduling Options
 
-### Option 1: host cron
+### Option 1: systemd timer inside LXC
 
-```cron
-*/15 * * * * cd /opt/yt-pl-dl && docker compose run --rm yt-pl-dl >> /opt/yt-pl-dl/logs/cron.log 2>&1
-```
+Использовать [bgutil-pot-provider.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/bgutil-pot-provider.service), [yt-pl-dl.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.service) и [yt-pl-dl.timer](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.timer).
 
-### Option 2: systemd timer on host
+### Option 2: host cron
 
-Можно запускать `docker compose run --rm yt-pl-dl` из systemd unit на Proxmox host или внутри VM.
+Возможен, но `systemd` внутри LXC предпочтительнее.
 
 ## Synology Integration
 

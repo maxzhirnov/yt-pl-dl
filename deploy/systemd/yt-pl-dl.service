@@ -6,5 +6,6 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 WorkingDirectory=/opt/yt-pl-dl
+Environment=DENO_INSTALL=/root/.deno
+Environment=PATH=/root/.deno/bin:/opt/yt-pl-dl/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/opt/yt-pl-dl/.venv/bin/python -m yt_pl_dl.main run-once
-

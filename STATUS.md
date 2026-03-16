@@ -19,11 +19,12 @@
 - приоритет загрузки `1080p` или ниже;
 - приоритет QuickTime-friendly формата: `mp4 + H.264 + AAC`;
 - конфиг через `.env`;
-- deployment-заготовки для Docker и systemd timer;
-- базовые GitHub Actions workflow для CI и публикации Docker image;
-- production-заготовки для запуска на Proxmox через Docker Compose.
+- deployment-заготовки для systemd timer;
+- базовый GitHub Actions workflow для CI;
+- production-схема для запуска на Proxmox LXC через Python venv.
 - основной production path зафиксирован как mounted Synology directory + `SYNC_MODE=copy`.
 - поддержка `YT_COOKIES_PATH` для YouTube bot-check обхода через cookies.
+- подтвержден рабочий production path: Tailscale exit node + cookies + `yt-dlp-ejs` + `deno` + `bgutil`.
 
 ## Verified
 
@@ -33,6 +34,7 @@
 - `state` показывает сохраненные записи;
 - `run-once` скачивает файл локально;
 - после корректировки формата файл открывается на macOS.
+- production run в LXC скачивает видео в `1080p` и копирует его в Synology mounted path.
 
 ## Commands
 
@@ -51,6 +53,7 @@ PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main state
 - основная команда для боевой работы сейчас: `run-once`;
 - основной production-вариант sync: mounted path от Synology и `SYNC_MODE=copy`;
 - в `copy` mode сервис теперь падает, если `SYNC_TARGET` не существует;
+- Docker-in-LXC не используется как основной production path;
 - на этой машине может требоваться `YT_SKIP_CERT_CHECK=1` из-за локальной SSL-конфигурации Python.
 
 ## Next Steps
@@ -58,11 +61,10 @@ PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main state
 Ближайшие задачи:
 
 1. Пока нет доступа к локальной сети, разрабатывать и тестировать сервис в режиме `SYNC_MODE=none` или `SYNC_MODE=copy`.
-2. Проверить, что GitHub Actions действительно публикует image в Docker Hub.
-3. После появления доступа к локальной сети подключить mounted path до Synology и проверить `SYNC_MODE=copy`.
-4. Добавить запуск по расписанию на production host.
-5. Добавить защиту от частично скачанных или неуспешно синхронизированных файлов.
-6. Добавить более аккуратную обработку ошибок и retry.
+2. Оформить финальные systemd services для `bgutil` и `yt-pl-dl` внутри LXC.
+3. Добавить запуск по расписанию на production host.
+4. Добавить защиту от частично скачанных или неуспешно синхронизированных файлов.
+5. Добавить более аккуратную обработку ошибок и retry.
 
 ## Development Workflow
 
@@ -75,8 +77,8 @@ PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main state
    - идемпотентность;
    - логирование.
 2. Sync-тесты пока делать только в режиме `copy` на локальную тестовую папку.
-3. Отдельно подготовить production-конфиг для Proxmox.
-4. После деплоя в локальную сеть включить `rsync` или запись в mounted Synology path.
+3. Production-деплой выполнять в LXC через Python venv и systemd.
+4. Для YouTube access использовать Tailscale exit node.
 5. Финальный end-to-end тест делать уже только на production host внутри локальной сети.
 
 ## Decisions

@@ -1,0 +1,14 @@
+[Unit]
+Description=bgutil YouTube PO Token provider
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/bgutil-ytdlp-pot-provider/server
+ExecStart=/usr/bin/node /opt/bgutil-ytdlp-pot-provider/server/build/main.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

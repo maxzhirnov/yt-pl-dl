@@ -12,7 +12,7 @@ Implemented in this iteration:
 - CLI command to inspect the playlist and show which videos are new;
 - one-shot workflow to check, download, and sync new videos;
 - file logging for operational runs;
-- deployment scaffolding for Proxmox via Docker or systemd timer.
+- working production deployment path for Proxmox LXC via Python venv + systemd timer.
 
 Still not implemented:
 
@@ -68,44 +68,44 @@ PYTHONPATH=src python3 -m yt_pl_dl.main bootstrap-state --yes
 
 ## Deployment
 
-For Proxmox or another always-on host you can use:
+Recommended production deployment:
 
-- [Dockerfile](/Users/mzhirnov/Documents/github/yt-pl-dl/Dockerfile) for containerized runs;
-- [docker-compose.yml](/Users/mzhirnov/Documents/github/yt-pl-dl/docker-compose.yml) for one-shot runs on a host with Docker;
+- Proxmox LXC
+- Python virtualenv
+- `systemd` timer for periodic runs
+- mounted Synology path with `SYNC_MODE=copy`
+- Tailscale exit node for YouTube access
+- `cookies.txt` + `yt-dlp-ejs` + `deno` + `bgutil-ytdlp-pot-provider` for YouTube anti-bot handling
+
+Deployment files:
+
 - [.env.production.example](/Users/mzhirnov/Documents/github/yt-pl-dl/.env.production.example) as the production config template;
 - [deploy/proxmox/README.md](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/proxmox/README.md) for the suggested Proxmox workflow;
+- [bgutil-pot-provider.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/bgutil-pot-provider.service) for the local PO token provider;
 - [yt-pl-dl.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.service) and [yt-pl-dl.timer](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.timer) for systemd-based scheduling.
 
 ## GitHub Actions
 
 Included workflows:
 
-- `.github/workflows/ci.yml`: dependency install, compile check, CLI smoke test;
-- `.github/workflows/docker-publish.yml`: build and push Docker image to Docker Hub on `main` and version tags.
-
-Required GitHub repository secrets:
-
-- `DOCKERHUB_USERNAME`
-- `DOCKERHUB_TOKEN`
-
-Expected Docker Hub image name:
-
-- `DOCKERHUB_USERNAME/yt-pl-dl`
+- `.github/workflows/ci.yml`: dependency install, compile check, CLI smoke test.
 
 ## Next Production Step
 
-Once Docker Hub publishing is working, the intended Proxmox flow is:
+The intended Proxmox flow is:
 
 ```bash
 cp .env.production.example .env.production
-mkdir -p data logs
-docker compose pull
-docker compose run --rm yt-pl-dl
+mkdir -p data logs secrets
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main run-once
 ```
 
 Recommended production architecture:
 
 - mount the Synology share on the Proxmox host or inside the LXC;
-- pass that mounted directory into the runtime environment;
 - use `SYNC_MODE=copy`;
 - point `SYNC_TARGET` at the mounted path, for example `/mnt/media/youtube`.
+- run the service directly in the LXC, not via Docker-in-LXC.
