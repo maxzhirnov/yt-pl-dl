@@ -1,0 +1,23 @@
+[project]
+name = "yt-pl-dl"
+version = "0.1.0"
+description = "Monitor a YouTube playlist, download new videos, and sync them to Synology."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "python-dotenv>=1.0.1,<2.0.0",
+  "yt-dlp>=2026.1.1",
+]
+
+[project.scripts]
+yt-pl-dl = "yt_pl_dl.main:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

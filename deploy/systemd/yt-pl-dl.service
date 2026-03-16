@@ -1,0 +1,10 @@
+[Unit]
+Description=yt-pl-dl one-shot playlist sync
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/yt-pl-dl
+ExecStart=/opt/yt-pl-dl/.venv/bin/python -m yt_pl_dl.main run-once
+

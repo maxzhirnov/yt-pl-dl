@@ -1,0 +1,10 @@
+[Unit]
+Description=Run yt-pl-dl every 15 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=15min
+Unit=yt-pl-dl.service
+
+[Install]
+WantedBy=timers.target
