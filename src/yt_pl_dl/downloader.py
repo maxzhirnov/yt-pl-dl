@@ -21,12 +21,14 @@ class DownloadResult:
 
 
 def _preferred_format(max_height: int) -> str:
-    # Prefer QuickTime-friendly H.264/AAC MP4 up to the configured height.
+    # Prefer MP4/H.264-like variants up to the configured height, but fall back
+    # to any available streams instead of failing on narrow codec filters.
     return (
-        f"(bestvideo[vcodec^=avc1][height<={max_height}][ext=mp4]"
-        f"+bestaudio[acodec^=mp4a][ext=m4a])/"
-        f"(bestvideo[vcodec^=avc1][height<={max_height}]+bestaudio[acodec^=mp4a])/"
-        f"(best[ext=mp4][vcodec^=avc1][height<={max_height}])/"
+        f"(bestvideo[vcodec*=avc][height<={max_height}][ext=mp4]"
+        f"+bestaudio[ext=m4a])/"
+        f"(bestvideo[vcodec*=avc][height<={max_height}]+bestaudio)/"
+        f"(best[ext=mp4][height<={max_height}])/"
+        f"(bestvideo[ext=mp4][height<={max_height}]+bestaudio)/"
         f"(bestvideo[height<={max_height}]+bestaudio)/"
         f"(best[height<={max_height}])/best"
     )
