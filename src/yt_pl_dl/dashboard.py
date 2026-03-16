@@ -71,12 +71,32 @@ def service_snapshot(unit: str) -> dict[str, str]:
 
 
 def timer_snapshot(unit: str) -> dict[str, str]:
-    return {
+    snapshot = {
         "unit": unit,
         "active": systemd_property(unit, "ActiveState") or "unknown",
-        "next": systemd_property(unit, "NextElapseUSecRealtime") or "n/a",
-        "last": systemd_property(unit, "LastTriggerUSec") or "n/a",
+        "next": "n/a",
+        "last": "n/a",
     }
+
+    result = run_command(["systemctl", "list-timers", "--all", "--no-pager", "--no-legend"])
+    if result.returncode == 0:
+        for line in result.stdout.splitlines():
+            if unit not in line:
+                continue
+            parts = line.split()
+            if len(parts) >= 10:
+                # NEXT LEFT LAST PASSED UNIT ACTIVATES
+                snapshot["next"] = " ".join(parts[0:5])
+                snapshot["last"] = " ".join(parts[5:9])
+                return snapshot
+
+    next_from_show = systemd_property(unit, "NextElapseUSecRealtime")
+    last_from_show = systemd_property(unit, "LastTriggerUSec")
+    if next_from_show:
+        snapshot["next"] = next_from_show
+    if last_from_show:
+        snapshot["last"] = last_from_show
+    return snapshot
 
 
 def tail_log(log_file: Path, lines: int = 50) -> str:
