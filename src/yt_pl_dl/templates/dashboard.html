@@ -14,6 +14,8 @@
         --accent-2: #b8642b;
         --border: #ddd1c0;
         --danger: #a42d2d;
+        --warn: #9a6700;
+        --ok: #146c43;
       }
       * { box-sizing: border-box; }
       body {
@@ -84,6 +86,9 @@
         background: #fff2f2;
         color: var(--danger);
       }
+      .status-ok { color: var(--ok); }
+      .status-warning { color: var(--warn); }
+      .status-missing { color: var(--danger); }
       table { width: 100%; border-collapse: collapse; }
       th, td {
         text-align: left;
@@ -99,6 +104,17 @@
         font-family: "SFMono-Regular", Menlo, Consolas, monospace;
         font-size: 12px;
         line-height: 1.45;
+      }
+      textarea {
+        width: 100%;
+        min-height: 220px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--ink);
+        font: inherit;
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 12px;
       }
       @media (max-width: 900px) {
         .span-3, .span-4, .span-8 { grid-column: span 12; }
@@ -162,6 +178,16 @@
           <p class="mono">bgutil changed: {{ provider_service.state_change }}</p>
         </article>
 
+        <article class="card span-4">
+          <h2>YouTube Cookies</h2>
+          <p class="metric">Status</p>
+          <p class="value status-{{ cookies.status }}">{{ cookies.label }}</p>
+          <p class="mono">{{ cookies.reason }}</p>
+          <p class="metric">Path: <span class="mono">{{ cookies.path }}</span></p>
+          <p class="metric">Updated: <span class="mono">{{ cookies.updated_at }}</span></p>
+          <p class="metric">Size: <span class="mono">{{ cookies.size }}</span></p>
+        </article>
+
         <article class="card span-8">
           <h2>Processed Videos</h2>
           <table>
@@ -201,6 +227,17 @@
         <article class="card span-4">
           <h2>Recent Log</h2>
           <pre>{{ log_text or "No logs yet." }}</pre>
+        </article>
+
+        <article class="card span-8">
+          <h2>Update Cookies</h2>
+          <p class="subtle">Paste the full exported <span class="mono">cookies.txt</span> file from your browser. The dashboard writes it to the configured path and keeps mode <span class="mono">600</span>.</p>
+          <form action="/actions/update-cookies" method="post">
+            <p style="margin: 14px 0 10px;">
+              <textarea name="cookies_text" spellcheck="false" placeholder="# Netscape HTTP Cookie File"></textarea>
+            </p>
+            <button class="button" type="submit">Update Cookies</button>
+          </form>
         </article>
       </section>
     </main>

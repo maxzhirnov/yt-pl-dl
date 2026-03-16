@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import os
 import secrets
 import subprocess
+from datetime import datetime
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
@@ -106,6 +108,82 @@ def tail_log(log_file: Path, lines: int = 50) -> str:
     return "\n".join(content[-lines:])
 
 
+def recent_worker_journal(lines: int = 120) -> str:
+    result = run_command(["journalctl", "-u", "yt-pl-dl.service", "-n", str(lines), "--no-pager"])
+    if result.returncode != 0:
+        return ""
+    return result.stdout
+
+
+def cookies_snapshot(settings: Settings, recent_output: str) -> dict[str, str | bool]:
+    path = settings.yt_cookies_path
+    if path is None:
+        return {
+            "configured": False,
+            "status": "missing",
+            "label": "Not configured",
+            "reason": "YT_COOKIES_PATH is not set.",
+            "path": "n/a",
+            "updated_at": "n/a",
+            "size": "n/a",
+        }
+
+    if not path.exists():
+        return {
+            "configured": True,
+            "status": "missing",
+            "label": "Missing",
+            "reason": "Cookie file does not exist.",
+            "path": str(path),
+            "updated_at": "n/a",
+            "size": "0 B",
+        }
+
+    file_size = path.stat().st_size
+    modified_at = path.stat().st_mtime
+    lowered_output = recent_output.lower()
+
+    if file_size == 0:
+        status_name = "missing"
+        label = "Empty"
+        reason = "Cookie file is empty."
+    elif "sign in to confirm you’re not a bot" in lowered_output or "login_required" in lowered_output:
+        status_name = "warning"
+        label = "Refresh needed"
+        reason = "Recent yt-dlp runs hit YouTube login or bot-check responses."
+    else:
+        status_name = "ok"
+        label = "Looks usable"
+        reason = "Cookie file exists and recent logs do not show login-required failures."
+
+    return {
+        "configured": True,
+        "status": status_name,
+        "label": label,
+        "reason": reason,
+        "path": str(path),
+        "updated_at": str(datetime.fromtimestamp(modified_at).astimezone().replace(microsecond=0)),
+        "size": f"{file_size} B",
+    }
+
+
+def write_cookies_file(path: Path, content: str) -> tuple[bool, str]:
+    normalized = content.strip()
+    if not normalized:
+        return False, "Cookies content is empty."
+
+    if "# Netscape HTTP Cookie File" not in normalized and ".youtube.com" not in normalized:
+        return False, "Cookies content does not look like an exported cookies.txt file."
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = path.with_suffix(path.suffix + ".tmp")
+    temp_path.write_text(normalized + "\n", encoding="utf-8")
+    os.chmod(temp_path, 0o600)
+    temp_path.replace(path)
+    os.chmod(path, 0o600)
+    return True, "Cookies file updated."
+
+
 def trigger_run_now() -> tuple[bool, str]:
     result = run_command(["systemctl", "start", "yt-pl-dl.service"])
     if result.returncode == 0:
@@ -138,6 +216,8 @@ def dashboard_page(
 ):
     store = StateStore(settings.state_db_path)
     store.init_db()
+    recent_journal = recent_worker_journal()
+    recent_log = tail_log(settings.log_file_path)
 
     videos = [
         {
@@ -159,7 +239,8 @@ def dashboard_page(
         "provider_service": service_snapshot("bgutil-pot-provider.service"),
         "tailscale_service": service_snapshot("tailscaled.service"),
         "worker_timer": timer_snapshot("yt-pl-dl.timer"),
-        "log_text": tail_log(settings.log_file_path),
+        "cookies": cookies_snapshot(settings, f"{recent_log}\n{recent_journal}"),
+        "log_text": recent_log,
         "flash_message": request.query_params.get("message", ""),
         "flash_error": request.query_params.get("error", ""),
     }
@@ -182,6 +263,23 @@ def delete_local(
     store = StateStore(settings.state_db_path)
     store.init_db()
     ok, message = delete_local_file(store, video_id)
+    query = f"message={message}" if ok else f"error={message}"
+    return RedirectResponse(url=f"/?{query}", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/actions/update-cookies")
+def update_cookies(
+    cookies_text: str = Form(...),
+    _: str = Depends(require_auth),
+    settings: Settings = Depends(get_settings),
+) -> RedirectResponse:
+    if settings.yt_cookies_path is None:
+        return RedirectResponse(
+            url="/?error=YT_COOKIES_PATH is not configured.",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    ok, message = write_cookies_file(settings.yt_cookies_path, cookies_text)
     query = f"message={message}" if ok else f"error={message}"
     return RedirectResponse(url=f"/?{query}", status_code=status.HTTP_303_SEE_OTHER)
 

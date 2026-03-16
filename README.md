@@ -106,10 +106,12 @@ The dashboard provides:
 
 - worker/timer/bgutil/tailscale status;
 - next scheduled run;
+- cookie file health based on presence plus recent login-required failures;
 - processed videos from `sqlite`;
 - recent application logs;
 - `Run Now` action;
-- `Delete Local` action for already-downloaded files.
+- `Delete Local` action for already-downloaded files;
+- in-browser `cookies.txt` update for the configured `YT_COOKIES_PATH`.
 
 Dashboard auth is controlled by:
 
