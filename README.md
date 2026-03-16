@@ -69,6 +69,9 @@ PYTHONPATH=src python3 -m yt_pl_dl.main bootstrap-state --yes
 For Proxmox or another always-on host you can use:
 
 - [Dockerfile](/Users/mzhirnov/Documents/github/yt-pl-dl/Dockerfile) for containerized runs;
+- [docker-compose.yml](/Users/mzhirnov/Documents/github/yt-pl-dl/docker-compose.yml) for one-shot runs on a host with Docker;
+- [.env.production.example](/Users/mzhirnov/Documents/github/yt-pl-dl/.env.production.example) as the production config template;
+- [deploy/proxmox/README.md](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/proxmox/README.md) for the suggested Proxmox workflow;
 - [yt-pl-dl.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.service) and [yt-pl-dl.timer](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.timer) for systemd-based scheduling.
 
 ## GitHub Actions
@@ -86,3 +89,14 @@ Required GitHub repository secrets:
 Expected Docker Hub image name:
 
 - `DOCKERHUB_USERNAME/yt-pl-dl`
+
+## Next Production Step
+
+Once Docker Hub publishing is working, the intended Proxmox flow is:
+
+```bash
+cp .env.production.example .env.production
+mkdir -p data logs
+docker compose pull
+docker compose run --rm yt-pl-dl
+```

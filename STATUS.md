@@ -20,7 +20,8 @@
 - приоритет QuickTime-friendly формата: `mp4 + H.264 + AAC`;
 - конфиг через `.env`;
 - deployment-заготовки для Docker и systemd timer;
-- базовые GitHub Actions workflow для CI и публикации Docker image.
+- базовые GitHub Actions workflow для CI и публикации Docker image;
+- production-заготовки для запуска на Proxmox через Docker Compose.
 
 ## Verified
 
@@ -53,12 +54,11 @@ PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main state
 Ближайшие задачи:
 
 1. Пока нет доступа к локальной сети, разрабатывать и тестировать сервис в режиме `SYNC_MODE=none` или `SYNC_MODE=copy`.
-2. Подготовить production-конфиг под Proxmox-host.
-3. Настроить GitHub repository secrets для Docker Hub.
-4. После появления доступа к локальной сети подключить реальный sync на Synology.
-5. Добавить запуск по расписанию.
-6. Добавить защиту от частично скачанных или неуспешно синхронизированных файлов.
-7. Добавить более аккуратную обработку ошибок и retry.
+2. Проверить, что GitHub Actions действительно публикует image в Docker Hub.
+3. После появления доступа к локальной сети подключить реальный sync на Synology.
+4. Добавить запуск по расписанию на production host.
+5. Добавить защиту от частично скачанных или неуспешно синхронизированных файлов.
+6. Добавить более аккуратную обработку ошибок и retry.
 
 ## Development Workflow
 

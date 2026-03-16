@@ -1,0 +1,11 @@
+services:
+  yt-pl-dl:
+    image: ${DOCKER_IMAGE:-maxzhirnov/yt-pl-dl:latest}
+    container_name: yt-pl-dl
+    restart: "no"
+    env_file:
+      - .env.production
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    command: ["python", "-m", "yt_pl_dl.main", "run-once"]
