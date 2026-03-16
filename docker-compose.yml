@@ -8,4 +8,5 @@ services:
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
+      - /mnt/media/youtube:/mnt/media/youtube
     command: ["python", "-m", "yt_pl_dl.main", "run-once"]
