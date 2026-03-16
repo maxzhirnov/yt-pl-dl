@@ -21,16 +21,11 @@ class DownloadResult:
 
 
 def _preferred_format(max_height: int) -> str:
-    # Prefer MP4/H.264-like variants up to the configured height, but fall back
-    # to any available streams instead of failing on narrow codec filters.
+    # Prefer the best quality up to the configured height without overfitting to
+    # specific codec labels that may vary per video/account/region.
     return (
-        f"(bestvideo[vcodec*=avc][height<={max_height}][ext=mp4]"
-        f"+bestaudio[ext=m4a])/"
-        f"(bestvideo[vcodec*=avc][height<={max_height}]+bestaudio)/"
-        f"(best[ext=mp4][height<={max_height}])/"
-        f"(bestvideo[ext=mp4][height<={max_height}]+bestaudio)/"
-        f"(bestvideo[height<={max_height}]+bestaudio)/"
-        f"(best[height<={max_height}])/best"
+        f"(bestvideo*[height<={max_height}]+bestaudio/best*[height<={max_height}])/"
+        "bestvideo*+bestaudio/best"
     )
 
 
