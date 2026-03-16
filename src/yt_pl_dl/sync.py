@@ -16,7 +16,15 @@ def sync_file(file_path: Path, settings: Settings) -> None:
             raise ValueError("SYNC_TARGET is required when SYNC_MODE=copy")
 
         target_dir = Path(settings.sync_target).expanduser()
-        target_dir.mkdir(parents=True, exist_ok=True)
+        if not target_dir.exists():
+            raise FileNotFoundError(
+                f"SYNC_TARGET does not exist for SYNC_MODE=copy: {target_dir}"
+            )
+        if not target_dir.is_dir():
+            raise NotADirectoryError(
+                f"SYNC_TARGET is not a directory for SYNC_MODE=copy: {target_dir}"
+            )
+
         shutil.copy2(file_path, target_dir / file_path.name)
         return
 

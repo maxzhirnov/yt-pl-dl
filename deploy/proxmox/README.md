@@ -7,9 +7,20 @@
 1. Поднять отдельный Linux VM или LXC container.
 2. Установить Docker и Docker Compose plugin.
 3. Склонировать репозиторий.
-4. Скопировать `.env.production.example` в `.env.production`.
-5. Настроить `SYNC_MODE` и `SYNC_TARGET` под реальный доступ к Synology.
-6. Запускать контейнер по cron или systemd timer на хосте.
+4. Примонтировать Synology share на host или прокинуть mount в LXC.
+5. Скопировать `.env.production.example` в `.env.production`.
+6. Настроить `SYNC_TARGET` на mounted path.
+7. Запускать контейнер по cron или systemd timer на хосте.
+
+## Recommended Sync Model
+
+Предпочтительный production-вариант:
+
+1. Synology share монтируется как обычная директория.
+2. Приложение видит ее как локальный путь.
+3. Сервис работает в `SYNC_MODE=copy`.
+
+Это проще и надежнее, чем встраивать сетевую логику Synology внутрь самого приложения.
 
 ## First Run
 
@@ -36,5 +47,10 @@ docker compose run --rm yt-pl-dl
 
 Когда сервис окажется в той же локальной сети:
 
-- если папка NAS смонтирована на production host, использовать `SYNC_MODE=copy`;
+- если папка NAS смонтирована на production host или прокинута в LXC, использовать `SYNC_MODE=copy`;
 - если удобнее пушить по SSH, использовать `SYNC_MODE=rsync`.
+
+Важно:
+
+- `SYNC_TARGET` должен уже существовать;
+- сервис специально не создает target directory в `copy` mode, чтобы не скрывать потерянный mount.

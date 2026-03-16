@@ -61,7 +61,8 @@ PYTHONPATH=src python3 -m yt_pl_dl.main bootstrap-state --yes
 - If local Python has broken CA certificates, set `YT_SKIP_CERT_CHECK=1` as a temporary workaround.
 - By default downloads now prefer QuickTime-friendly `mp4/h264+aac` and cap video at `1080p`. Override with `DOWNLOAD_MAX_HEIGHT`.
 - Logs are written to `./logs/yt-pl-dl.log` by default.
-- `SYNC_MODE=copy` expects `SYNC_TARGET` to be a local or mounted directory.
+- Recommended production mode is `SYNC_MODE=copy` with a mounted Synology directory exposed into the host/LXC/container.
+- `SYNC_MODE=copy` expects `SYNC_TARGET` to already exist; the service will fail if the mounted path is missing.
 - `SYNC_MODE=rsync` expects `SYNC_TARGET` in `rsync` format, for example `user@192.168.1.10:/volume1/media/youtube`.
 
 ## Deployment
@@ -100,3 +101,10 @@ mkdir -p data logs
 docker compose pull
 docker compose run --rm yt-pl-dl
 ```
+
+Recommended production architecture:
+
+- mount the Synology share on the Proxmox host or inside the LXC;
+- pass that mounted directory into the runtime environment;
+- use `SYNC_MODE=copy`;
+- point `SYNC_TARGET` at the mounted path, for example `/mnt/media/youtube`.

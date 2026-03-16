@@ -22,6 +22,7 @@
 - deployment-заготовки для Docker и systemd timer;
 - базовые GitHub Actions workflow для CI и публикации Docker image;
 - production-заготовки для запуска на Proxmox через Docker Compose.
+- основной production path зафиксирован как mounted Synology directory + `SYNC_MODE=copy`.
 
 ## Verified
 
@@ -47,6 +48,8 @@ PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main state
 - небезопасный сценарий `check --mark-seen` убран из основного CLI;
 - вместо него есть явная служебная команда `bootstrap-state --yes`;
 - основная команда для боевой работы сейчас: `run-once`;
+- основной production-вариант sync: mounted path от Synology и `SYNC_MODE=copy`;
+- в `copy` mode сервис теперь падает, если `SYNC_TARGET` не существует;
 - на этой машине может требоваться `YT_SKIP_CERT_CHECK=1` из-за локальной SSL-конфигурации Python.
 
 ## Next Steps
@@ -55,7 +58,7 @@ PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main state
 
 1. Пока нет доступа к локальной сети, разрабатывать и тестировать сервис в режиме `SYNC_MODE=none` или `SYNC_MODE=copy`.
 2. Проверить, что GitHub Actions действительно публикует image в Docker Hub.
-3. После появления доступа к локальной сети подключить реальный sync на Synology.
+3. После появления доступа к локальной сети подключить mounted path до Synology и проверить `SYNC_MODE=copy`.
 4. Добавить запуск по расписанию на production host.
 5. Добавить защиту от частично скачанных или неуспешно синхронизированных файлов.
 6. Добавить более аккуратную обработку ошибок и retry.

@@ -70,11 +70,11 @@
 2. Если есть SSH на Synology, синхронизировать через `rsync`.
 3. Если есть только SMB, можно либо писать в mounted share, либо отдельно настраивать копирование через сетевой mount.
 
-Для первой версии я рекомендую `rsync`, если SSH доступен:
+Текущая зафиксированная стратегия:
 
-- надежная дозагрузка;
-- нормальная синхронизация;
-- легко повторять после ошибок.
+- основной production path: mounted Synology folder;
+- сервис пишет в нее как в обычную локальную директорию через `copy`;
+- `rsync` остается fallback-вариантом.
 
 ### 5. Scheduler
 
@@ -125,7 +125,7 @@ yt-pl-dl/
 YT_PLAYLIST_URL=https://youtube.com/playlist?list=PLG0cTqREUrX-BE3_hOOu1O94OP1ZI6vOw
 LOCAL_DOWNLOAD_DIR=./data/downloads
 STATE_DB_PATH=./data/state.db
-SYNC_MODE=rsync
+SYNC_MODE=copy
 SYNC_TARGET=/path/to/mounted/or/remote/folder
 RSYNC_HOST=192.168.x.x
 RSYNC_USER=your-user
@@ -138,7 +138,8 @@ CHECK_INTERVAL_MINUTES=15
 - Язык: Python.
 - Получение playlist metadata: `yt-dlp`.
 - Состояние: `sqlite`.
-- Первая стратегия синхронизации: `rsync`, либо запись в уже смонтированную папку Synology.
+- Основная стратегия синхронизации: запись в уже смонтированную папку Synology.
+- `rsync` оставляем как fallback.
 - Формат сервиса: сначала CLI-утилита, потом при необходимости daemon/container.
 
 ## Вопросы перед реализацией
@@ -196,7 +197,7 @@ CHECK_INTERVAL_MINUTES=15
 
 Что еще осталось:
 
-- выбрать реальный способ доступа к Synology в этой среде;
+- подключить реальный mounted path до Synology в production-среде;
 - настроить рабочий target path;
 - проверить end-to-end sync до папки, которую видит Plex;
 - добавить расписание запуска.
