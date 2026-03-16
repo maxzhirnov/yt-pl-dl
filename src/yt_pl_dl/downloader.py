@@ -21,11 +21,14 @@ class DownloadResult:
 
 
 def _preferred_format(max_height: int) -> str:
-    # Prefer the best quality up to the configured height without overfitting to
-    # specific codec labels that may vary per video/account/region.
+    # Prefer QuickTime-friendly MP4/H.264 + M4A up to the configured height,
+    # but still fall back to broadly available yt-dlp defaults.
     return (
-        f"(bestvideo*[height<={max_height}]+bestaudio/best*[height<={max_height}])/"
-        "bestvideo*+bestaudio/best"
+        f"(bestvideo[ext=mp4][vcodec*=avc][height<={max_height}]+bestaudio[ext=m4a])/"
+        f"(bestvideo[ext=mp4][height<={max_height}]+bestaudio[ext=m4a])/"
+        f"(best[ext=mp4][height<={max_height}])/"
+        f"(bestvideo[height<={max_height}]+bestaudio/best[height<={max_height}])/"
+        "bestvideo+bestaudio/best"
     )
 
 
