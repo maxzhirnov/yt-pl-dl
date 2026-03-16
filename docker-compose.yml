@@ -5,6 +5,8 @@ services:
     restart: "no"
     env_file:
       - .env.production
+    environment:
+      PYTHONPATH: /app/src
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
