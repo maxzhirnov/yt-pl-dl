@@ -12,7 +12,8 @@ Implemented in this iteration:
 - CLI command to inspect the playlist and show which videos are new;
 - one-shot workflow to check, download, and sync new videos;
 - file logging for operational runs;
-- working production deployment path for Proxmox LXC via Python venv + systemd timer.
+- working production deployment path for Proxmox LXC via Python venv + systemd timer;
+- authenticated operational dashboard for status, logs, and processed videos.
 
 Still not implemented:
 
@@ -55,6 +56,12 @@ Bootstrap local state from the current playlist without downloading:
 PYTHONPATH=src python3 -m yt_pl_dl.main bootstrap-state --yes
 ```
 
+Run the dashboard locally:
+
+```bash
+PYTHONPATH=src python3 -m yt_pl_dl.dashboard
+```
+
 ## Notes
 
 - `yt-dlp` must be able to access YouTube from the machine where the script runs.
@@ -83,13 +90,31 @@ Deployment files:
 - [deploy/proxmox/README.md](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/proxmox/README.md) for the suggested Proxmox workflow;
 - [bgutil-pot-provider.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/bgutil-pot-provider.service) for the local PO token provider;
 - [yt-pl-dl.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.service) and [yt-pl-dl.timer](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.timer) for systemd-based scheduling.
+- [yt-pl-dl-dashboard.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl-dashboard.service) for the local dashboard.
 
 The recommended steady-state setup is:
 
 - keep `/opt/yt-pl-dl/.env` populated from `.env.production`;
 - keep `cookies.txt` in `/opt/yt-pl-dl/secrets/cookies.txt`;
 - run `bgutil-pot-provider.service` continuously;
-- run `yt-pl-dl.timer` every 15 minutes.
+- run `yt-pl-dl.timer` every 15 minutes;
+- expose the dashboard through Nginx Proxy Manager while keeping app-level Basic Auth enabled.
+
+## Dashboard
+
+The dashboard provides:
+
+- worker/timer/bgutil/tailscale status;
+- next scheduled run;
+- processed videos from `sqlite`;
+- recent application logs;
+- `Run Now` action;
+- `Delete Local` action for already-downloaded files.
+
+Dashboard auth is controlled by:
+
+- `DASHBOARD_BASIC_AUTH_USERNAME`
+- `DASHBOARD_BASIC_AUTH_PASSWORD`
 
 ## GitHub Actions
 

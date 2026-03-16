@@ -13,6 +13,7 @@
 7. Настроить `cookies.txt`, `yt-dlp-ejs` и `bgutil-ytdlp-pot-provider`.
 8. Скопировать `.env.production.example` в `.env.production`.
 9. Запускать сервис через `systemd` timer.
+10. При необходимости поднять локальный dashboard и опубликовать его через Nginx Proxy Manager.
 
 ## Recommended Sync Model
 
@@ -65,6 +66,16 @@ systemctl status yt-pl-dl.timer --no-pager
 systemctl list-timers --all | grep yt-pl-dl
 journalctl -u yt-pl-dl.service -n 100 --no-pager
 ```
+
+### Option 2: dashboard service inside LXC
+
+Для local UI использовать [yt-pl-dl-dashboard.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl-dashboard.service).
+
+Рекомендуется:
+
+- слушать только `127.0.0.1`;
+- публиковать наружу через Nginx Proxy Manager;
+- оставить Basic Auth включенным на уровне приложения.
 
 ### Option 2: host cron
 

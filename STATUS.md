@@ -25,6 +25,7 @@
 - основной production path зафиксирован как mounted Synology directory + `SYNC_MODE=copy`.
 - поддержка `YT_COOKIES_PATH` для YouTube bot-check обхода через cookies.
 - подтвержден рабочий production path: Tailscale exit node + cookies + `yt-dlp-ejs` + `deno` + `bgutil`.
+- добавлен MVP dashboard с Basic Auth для operational visibility.
 
 ## Verified
 
@@ -35,6 +36,7 @@
 - `run-once` скачивает файл локально;
 - после корректировки формата файл открывается на macOS.
 - production run в LXC скачивает видео в `1080p` и копирует его в Synology mounted path.
+- systemd services и timer подтверждены на реальном LXC.
 
 ## Commands
 
@@ -65,6 +67,7 @@ PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main state
 3. Добавить запуск по расписанию на production host.
 4. Добавить защиту от частично скачанных или неуспешно синхронизированных файлов.
 5. Добавить более аккуратную обработку ошибок и retry.
+6. Поднять dashboard service и опубликовать его через Nginx Proxy Manager.
 
 ## Development Workflow
 

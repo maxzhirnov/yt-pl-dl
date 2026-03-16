@@ -29,6 +29,10 @@ class Settings:
     sync_mode: str
     sync_target: str
     check_archived: bool
+    dashboard_host: str
+    dashboard_port: int
+    dashboard_basic_auth_username: str | None
+    dashboard_basic_auth_password: str | None
 
 
 def load_settings() -> Settings:
@@ -40,6 +44,7 @@ def load_settings() -> Settings:
     log_file_path = Path(os.getenv("LOG_FILE_PATH", "./logs/yt-pl-dl.log")).expanduser()
     cookies_path_raw = os.getenv("YT_COOKIES_PATH", "").strip()
     yt_cookies_path = Path(cookies_path_raw).expanduser() if cookies_path_raw else None
+    dashboard_port = int(os.getenv("DASHBOARD_PORT", "8787"))
 
     return Settings(
         yt_skip_cert_check=_as_bool(os.getenv("YT_SKIP_CERT_CHECK"), default=False),
@@ -52,6 +57,10 @@ def load_settings() -> Settings:
         sync_mode=os.getenv("SYNC_MODE", "none").strip().lower(),
         sync_target=os.getenv("SYNC_TARGET", "").strip(),
         check_archived=_as_bool(os.getenv("CHECK_ARCHIVED"), default=False),
+        dashboard_host=os.getenv("DASHBOARD_HOST", "127.0.0.1").strip(),
+        dashboard_port=dashboard_port,
+        dashboard_basic_auth_username=os.getenv("DASHBOARD_BASIC_AUTH_USERNAME", "").strip() or None,
+        dashboard_basic_auth_password=os.getenv("DASHBOARD_BASIC_AUTH_PASSWORD", "").strip() or None,
     )
 
 

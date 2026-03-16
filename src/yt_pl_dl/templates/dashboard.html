@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>yt-pl-dl dashboard</title>
+    <style>
+      :root {
+        --bg: #f3efe6;
+        --panel: #fffdf8;
+        --ink: #211d18;
+        --muted: #6f665d;
+        --accent: #0d5a63;
+        --accent-2: #b8642b;
+        --border: #ddd1c0;
+        --danger: #a42d2d;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, #e8dcc1 0, transparent 28rem),
+          linear-gradient(180deg, #f8f6f1 0%, var(--bg) 100%);
+      }
+      .page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 32px 20px 48px;
+      }
+      .hero {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      h1, h2 { margin: 0 0 10px; }
+      h1 { font-size: 42px; }
+      p { margin: 0; }
+      .subtle { color: var(--muted); }
+      .button {
+        appearance: none;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: white;
+        padding: 10px 14px;
+        cursor: pointer;
+        font: inherit;
+      }
+      .button.secondary {
+        background: var(--panel);
+        color: var(--accent);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 16px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        padding: 18px;
+        box-shadow: 0 10px 30px rgba(28, 22, 16, 0.05);
+      }
+      .span-3 { grid-column: span 3; }
+      .span-4 { grid-column: span 4; }
+      .span-8 { grid-column: span 8; }
+      .metric { font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+      .value { font-size: 22px; font-weight: bold; }
+      .mono {
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 13px;
+      }
+      .flash {
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        background: #f7f3ea;
+      }
+      .flash.error {
+        border-color: #dbb3b3;
+        background: #fff2f2;
+        color: var(--danger);
+      }
+      table { width: 100%; border-collapse: collapse; }
+      th, td {
+        text-align: left;
+        padding: 10px 8px;
+        border-top: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th { font-size: 13px; color: var(--muted); font-weight: normal; }
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      @media (max-width: 900px) {
+        .span-3, .span-4, .span-8 { grid-column: span 12; }
+        .hero { flex-direction: column; align-items: start; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div>
+          <h1>yt-pl-dl</h1>
+          <p class="subtle">Operational dashboard for the LXC worker, systemd services, and synced playlist videos.</p>
+        </div>
+        <form action="/actions/run-now" method="post">
+          <button class="button" type="submit">Run Now</button>
+        </form>
+      </section>
+
+      {% if flash_message %}
+      <div class="flash">{{ flash_message }}</div>
+      {% endif %}
+      {% if flash_error %}
+      <div class="flash error">{{ flash_error }}</div>
+      {% endif %}
+
+      <section class="grid">
+        <article class="card span-3">
+          <div class="metric">Tracked Videos</div>
+          <div class="value">{{ video_count }}</div>
+        </article>
+        <article class="card span-3">
+          <div class="metric">Sync Target</div>
+          <div class="value mono">{{ sync_target }}</div>
+        </article>
+        <article class="card span-3">
+          <div class="metric">Next Timer Run</div>
+          <div class="value mono">{{ worker_timer.next }}</div>
+        </article>
+        <article class="card span-3">
+          <div class="metric">Last Timer Trigger</div>
+          <div class="value mono">{{ worker_timer.last }}</div>
+        </article>
+
+        <article class="card span-4">
+          <h2>Worker</h2>
+          <p class="metric">yt-pl-dl.service</p>
+          <p class="value">{{ worker_service.active }} / {{ worker_service.result }}</p>
+          <p class="mono">{{ worker_service.state_change }}</p>
+        </article>
+        <article class="card span-4">
+          <h2>Timer</h2>
+          <p class="metric">yt-pl-dl.timer</p>
+          <p class="value">{{ worker_timer.active }}</p>
+          <p class="mono">next: {{ worker_timer.next }}</p>
+        </article>
+        <article class="card span-4">
+          <h2>Dependencies</h2>
+          <p class="metric">bgutil: <span class="mono">{{ provider_service.active }}</span></p>
+          <p class="metric">tailscaled: <span class="mono">{{ tailscale_service.active }}</span></p>
+          <p class="mono">bgutil changed: {{ provider_service.state_change }}</p>
+        </article>
+
+        <article class="card span-8">
+          <h2>Processed Videos</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Video</th>
+                <th>Discovered</th>
+                <th>Local File</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for video in videos %}
+              <tr>
+                <td>
+                  <strong>{{ video.title }}</strong><br>
+                  <span class="mono">{{ video.video_id }}</span>
+                  {% if video.channel %}<br><span class="subtle">{{ video.channel }}</span>{% endif %}
+                </td>
+                <td class="mono">{{ video.discovered_at }}</td>
+                <td class="mono">{{ video.local_path or "deleted" }}</td>
+                <td>
+                  {% if video.local_path %}
+                  <form action="/videos/{{ video.video_id }}/delete-local" method="post">
+                    <button class="button secondary" type="submit">Delete Local</button>
+                  </form>
+                  {% else %}
+                  <span class="subtle">n/a</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </article>
+
+        <article class="card span-4">
+          <h2>Recent Log</h2>
+          <pre>{{ log_text or "No logs yet." }}</pre>
+        </article>
+      </section>
+    </main>
+  </body>
+  </html>

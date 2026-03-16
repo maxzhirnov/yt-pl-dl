@@ -97,6 +97,28 @@ class StateStore:
             ).fetchall()
         return [(row[0], row[1], row[2], row[3], row[4]) for row in rows]
 
+    def get_processed_video(self, video_id: str) -> tuple[str, str, str | None, str | None, str | None] | None:
+        with self.connect() as conn:
+            row = conn.execute(
+                """
+                SELECT video_id, title, channel, discovered_at, local_path
+                FROM processed_videos
+                WHERE video_id = ?
+                LIMIT 1
+                """,
+                (video_id,),
+            ).fetchone()
+        if not row:
+            return None
+        return (row[0], row[1], row[2], row[3], row[4])
+
+    def clear_local_path(self, video_id: str) -> None:
+        with self.connect() as conn:
+            conn.execute(
+                "UPDATE processed_videos SET local_path = NULL WHERE video_id = ?",
+                (video_id,),
+            )
+
     def _ensure_local_path_column(self, conn: sqlite3.Connection) -> None:
         columns = conn.execute("PRAGMA table_info(processed_videos)").fetchall()
         if any(column[1] == "local_path" for column in columns):
