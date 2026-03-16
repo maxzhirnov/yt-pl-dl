@@ -1,7 +1,11 @@
 [Unit]
 Description=yt-pl-dl one-shot playlist sync
 After=network-online.target
+After=tailscaled.service
+After=bgutil-pot-provider.service
 Wants=network-online.target
+Wants=tailscaled.service
+Wants=bgutil-pot-provider.service
 
 [Service]
 Type=oneshot

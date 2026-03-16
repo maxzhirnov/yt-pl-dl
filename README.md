@@ -84,6 +84,13 @@ Deployment files:
 - [bgutil-pot-provider.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/bgutil-pot-provider.service) for the local PO token provider;
 - [yt-pl-dl.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.service) and [yt-pl-dl.timer](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.timer) for systemd-based scheduling.
 
+The recommended steady-state setup is:
+
+- keep `/opt/yt-pl-dl/.env` populated from `.env.production`;
+- keep `cookies.txt` in `/opt/yt-pl-dl/secrets/cookies.txt`;
+- run `bgutil-pot-provider.service` continuously;
+- run `yt-pl-dl.timer` every 15 minutes.
+
 ## GitHub Actions
 
 Included workflows:

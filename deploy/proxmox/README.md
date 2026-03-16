@@ -41,6 +41,31 @@ PYTHONPATH=src .venv/bin/python -m yt_pl_dl.main run-once
 
 Использовать [bgutil-pot-provider.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/bgutil-pot-provider.service), [yt-pl-dl.service](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.service) и [yt-pl-dl.timer](/Users/mzhirnov/Documents/github/yt-pl-dl/deploy/systemd/yt-pl-dl.timer).
 
+Пример установки внутри LXC:
+
+```bash
+cd /opt/yt-pl-dl
+cp .env.production .env
+cp deploy/systemd/bgutil-pot-provider.service /etc/systemd/system/
+cp deploy/systemd/yt-pl-dl.service /etc/systemd/system/
+cp deploy/systemd/yt-pl-dl.timer /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now tailscaled
+systemctl enable --now bgutil-pot-provider.service
+systemctl start yt-pl-dl.service
+systemctl enable --now yt-pl-dl.timer
+```
+
+Проверка:
+
+```bash
+systemctl status bgutil-pot-provider.service --no-pager
+systemctl status yt-pl-dl.service --no-pager
+systemctl status yt-pl-dl.timer --no-pager
+systemctl list-timers --all | grep yt-pl-dl
+journalctl -u yt-pl-dl.service -n 100 --no-pager
+```
+
 ### Option 2: host cron
 
 Возможен, но `systemd` внутри LXC предпочтительнее.
